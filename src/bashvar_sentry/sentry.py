@@ -15,7 +15,12 @@ try:
 except ImportError:
     from importlib_resources import files, as_file  # type: ignore
 
-from .exceptions import BashScriptError, ScriptNotFoundError, ParsingError
+from .exceptions import (
+    BashScriptError,
+    ScriptNotFoundError,
+    ParsingError,
+    BashExecutableNotFoundError,
+)
 
 # Regex to parse a 'declare -p' line. It captures:
 # 1. Declaration flags (e.g., 'x', 'a', 'A')
