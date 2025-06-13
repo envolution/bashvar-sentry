@@ -1,0 +1,29 @@
+pkgname=bashvar-sentry-git
+_pkgname=bashvar-sentry
+pkgver=0.0.1
+pkgrel=1
+pkgdesc="module for safely retrieving assigned variables in bash scripts"
+arch=('any')
+url='https://github.com/envolution/bashvar-sentry'
+license=(Apache-2.0)
+depends=(python)
+makedepends=(
+  python-build
+  python-installer
+)
+source=("https://files.pythonhosted.org/packages/source/g/gguf/gguf-${pkgver}.tar.gz")
+source=("$url/archive/refs/tags/${pkgver}.tar.gz")
+sha256sums=('e3f88278e6f6778e0348fbc97313a4a2f8af63b08fe25dc381251d9c611dae03')
+
+build() {
+  cd $_pkgname-$pkgver
+  python -m build --wheel --no-isolation
+}
+
+package() {
+  cd $_pkgname-$pkgver
+  python -m installer --destdir="$pkgdir" dist/*.whl
+  install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
+}
+
+# vim:set ts=2 sw=2 et:
