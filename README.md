@@ -1,4 +1,4 @@
-[![PyPI version](https://badge.fury.io/py/bashvar-sentry.svg)](https://badge.fury.io/py/bashvar-sentry) <!--- This badge won't work until you publish, but it's good to have. --->
+[![PyPI version](https://badge.fury.io/py/bashvar-sentry.svg)](https://badge.fury.io/py/bashvar-sentry)
 
 Safely source Bash scripts and capture variables in Python.
 
