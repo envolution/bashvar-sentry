@@ -1,19 +1,18 @@
 #!/bin/bash
 
-# Exit immediately if a command exits with a non-zero status.
-set -e
+# set -e # We need commands to fail silently (We dropped PATH so we expect commands to fail)
 
 # Path to the user's script is the first argument
 TARGET_SCRIPT="$1"
 
 if [ -z "$TARGET_SCRIPT" ]; then
-    echo "Error: No target script path provided." >&2
-    exit 1
+  echo "Error: No target script path provided." >&2
+  exit 1
 fi
 
 if [ ! -f "$TARGET_SCRIPT" ]; then
-    echo "Error: Target script not found at '$TARGET_SCRIPT'" >&2
-    exit 2
+  echo "Error: Target script not found at '$TARGET_SCRIPT'" >&2
+  exit 2
 fi
 
 # Source the user's script. Any commands inside will fail if they
