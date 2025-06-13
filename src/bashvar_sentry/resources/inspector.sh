@@ -13,7 +13,7 @@ if [ ! -f "$TARGET_SCRIPT" ]; then
   exit 2
 fi
 
-"$BASH_PATH" -n "$TARGET_SCRIPT" 2>/dev/null || exit $?
+"$BASH_PATH" -n "$TARGET_SCRIPT" || exit $?
 
 #    If the syntax is valid, source the file to get variables.
 #    This will still allow non-fatal errors (like 'command not found')
