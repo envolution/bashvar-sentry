@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# set -e # We need commands to fail silently (We dropped PATH so we expect commands to fail)
-
-# Path to the user's script is the first argument
 TARGET_SCRIPT="$1"
 
 if [ -z "$TARGET_SCRIPT" ]; then
@@ -15,11 +12,13 @@ if [ ! -f "$TARGET_SCRIPT" ]; then
   exit 2
 fi
 
-# Source the user's script. Any commands inside will fail if they
-# are not bash built-ins, because PATH is empty in the sandbox.
-# shellcheck disable=SC1090
-. "$TARGET_SCRIPT" || exit $?
+bash -n "$TARGET_SCRIPT" 2>/dev/null || exit $?
 
-# Dump all variables in a machine-readable format.
-# This command is a shell built-in and will always be available.
+#    If the syntax is valid, source the file to get variables.
+#    This will still allow non-fatal errors (like 'command not found')
+#    to occur without stopping the script.
+# shellcheck disable=SC1090
+. "$TARGET_SCRIPT"
+
+# 3. Dump the variables.
 declare -p

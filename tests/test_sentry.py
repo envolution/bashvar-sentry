@@ -111,26 +111,31 @@ def test_raises_bash_script_error_on_fatal_syntax(create_script):
     assert "syntax error" in excinfo.value.stderr.lower()
 
 
-# Change this test function:
-def test_raises_bash_executable_not_found(
-    monkeypatch, create_script
-):  # Add create_script
+# In tests/test_sentry.py, replace the entire test function with this one.
+
+
+def test_raises_bash_executable_not_found(monkeypatch, create_script):
     """
     Tests that we raise BashExecutableNotFoundError if 'bash' cannot be found.
     We use monkeypatch to simulate 'bash' not being on the system.
     """
-    # Create a dummy script file so the initial check passes.
-    dummy_script = create_script("dummy.sh", "VAR=1")
+    dummy_script_path = create_script("dummy.sh", "VAR=1").resolve()
 
-    # 1. Simulate `shutil.which` failing to find 'bash' in the PATH
+    # Create a targeted mock that only affects the fallback paths
+    original_is_file = Path.is_file
+
+    def mock_is_file(self):
+        # Allow the check for our real test script to pass
+        if self == dummy_script_path:
+            return original_is_file(self)
+        # Fail the check for any other path (i.e., the bash fallbacks)
+        return False
+
     monkeypatch.setattr(shutil, "which", lambda cmd: None)
-
-    # 2. Simulate the fallback paths not existing either
-    monkeypatch.setattr(Path, "is_file", lambda self: False)
+    monkeypatch.setattr(Path, "is_file", mock_is_file)
 
     with pytest.raises(BashExecutableNotFoundError):
-        # Use the path to the real, temporary script.
-        source_and_get_vars(dummy_script)
+        source_and_get_vars(dummy_script_path)
 
 
 def test_empty_script_returns_no_user_vars(create_script):
