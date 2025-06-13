@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "bashvar_sentry"
 version = "0.0.2"
-authors = [{ name = "Your Name", email = "you@example.com" }]
+authors = [{ name = "envolution", email = "involution@gmail.com" }]
 description = "A robust Python module to safely source a bash script in a sandboxed environment and collect its variables."
 readme = "README.md"
 requires-python = ">=3.7"
@@ -21,8 +21,8 @@ classifiers = [
 dependencies = ["importlib-resources; python_version<'3.9'"]
 
 [project.urls]
-Homepage = "https://github.com/your_username/bashvar_sentry"
-Issues = "https://github.com/your_username/bashvar_sentry/issues"
+Homepage = "https://github.com/envolution/bashvar-sentry"
+Issues = "https://github.com/envolution/bashvar-sentry/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]
