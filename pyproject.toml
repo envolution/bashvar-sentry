@@ -32,6 +32,3 @@ where = ["src"]
 
 [project.optional-dependencies]
 test = ["pytest"]
-
-[tool.pytest.ini_options]
-python_path = ["src"]
