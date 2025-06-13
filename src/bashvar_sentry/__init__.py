@@ -11,6 +11,7 @@ from .exceptions import (
     BashScriptError,
     ScriptNotFoundError,
     ParsingError,
+    BashExecutableNotFoundError,
 )
 from .sentry import source_and_get_vars
 
@@ -20,4 +21,5 @@ __all__ = [
     "BashScriptError",
     "ScriptNotFoundError",
     "ParsingError",
+    "BashExecutableNotFoundError",
 ]
