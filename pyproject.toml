@@ -29,3 +29,6 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "bashvar_sentry.resources" = ["*.sh"]
+
+[project.optional-dependencies]
+test = ["pytest"]
