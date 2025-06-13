@@ -1,6 +1,6 @@
-pkgname=bashvar-sentry-git
+pkgname=python-bashvar-sentry-git
 _pkgname=bashvar-sentry
-pkgver=0.0.1
+pkgver=0.0.2+r0+g831131a
 pkgrel=1
 pkgdesc="module for safely retrieving assigned variables in bash scripts"
 arch=('any')
@@ -10,19 +10,30 @@ depends=(python)
 makedepends=(
   python-build
   python-installer
+  git
 )
-source=("https://files.pythonhosted.org/packages/source/g/gguf/gguf-${pkgver}.tar.gz")
-source=("$url/archive/refs/tags/${pkgver}.tar.gz")
-sha256sums=('e3f88278e6f6778e0348fbc97313a4a2f8af63b08fe25dc381251d9c611dae03')
+#source=("$url/archive/refs/tags/${pkgver}.tar.gz")
+source=("git+$url.git")
+sha256sums=('SKIP')
+
+pkgver() {
+  cd $_pkgname
+  git describe --long --tags | sed 's/\([^-]*-g\)/r\1/;s/-/+/g'
+}
 
 build() {
-  cd $_pkgname-$pkgver
+  cd $_pkgname
   python -m build --wheel --no-isolation
 }
 
+check() {
+  cd $_pkgname
+  PYTHONPATH=src python -m pytest tests/
+}
+
 package() {
-  cd $_pkgname-$pkgver
-  python -m installer --destdir="$pkgdir" dist/*.whl
+  cd $_pkgname
+  python -m installer --destdir="$pkgdir" dist/${_pkgname/-/_}-${pkgver%%+*}*.whl
   install -Dm644 LICENSE "$pkgdir"/usr/share/licenses/$pkgname/LICENSE
 }
 
