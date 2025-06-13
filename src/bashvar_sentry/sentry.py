@@ -162,7 +162,7 @@ def source_and_get_vars(
     # This context manager handles temporary file creation if the resource is in a zip
     harness_ref = files("bashvar_sentry.resources").joinpath("inspector.sh")
     with as_file(harness_ref) as inspector_path:
-        cmd = [bash_executable, str(inspector_path), str(script_file)]
+        cmd = [bash_executable, str(inspector_path), bash_executable, str(script_file)]
 
         # The Sandbox: Create a minimal environment with an empty PATH.
         # This is the core of the security model, preventing execution of external commands.

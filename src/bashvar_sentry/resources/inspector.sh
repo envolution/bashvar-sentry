@@ -1,6 +1,7 @@
 #!/bin/bash
 
-TARGET_SCRIPT="$1"
+BASH_PATH="$1"
+TARGET_SCRIPT="$2"
 
 if [ -z "$TARGET_SCRIPT" ]; then
   echo "Error: No target script path provided." >&2
@@ -12,7 +13,7 @@ if [ ! -f "$TARGET_SCRIPT" ]; then
   exit 2
 fi
 
-bash -n "$TARGET_SCRIPT" 2>/dev/null || exit $?
+"$BASH_PATH" -n "$TARGET_SCRIPT" 2>/dev/null || exit $?
 
 #    If the syntax is valid, source the file to get variables.
 #    This will still allow non-fatal errors (like 'command not found')
