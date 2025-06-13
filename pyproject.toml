@@ -34,4 +34,4 @@ where = ["src"]
 test = ["pytest"]
 
 [tool.pytest.ini_options]
-python_paths = ["src"]
+python_path = ["src"]
