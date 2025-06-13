@@ -18,7 +18,7 @@ fi
 # Source the user's script. Any commands inside will fail if they
 # are not bash built-ins, because PATH is empty in the sandbox.
 # shellcheck disable=SC1090
-. "$TARGET_SCRIPT"
+. "$TARGET_SCRIPT" || exit $?
 
 # Dump all variables in a machine-readable format.
 # This command is a shell built-in and will always be available.

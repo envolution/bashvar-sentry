@@ -33,15 +33,19 @@ CONFIG["port"]="8080"
 CONFIG['user name']="admin-user"
 """
 
+
 @pytest.fixture
 def create_script(tmp_path: Path):
     """A pytest fixture to create a script file in a temporary directory."""
+
     def _create_script(filename: str, content: str) -> Path:
         script_path = tmp_path / filename
         script_path.write_text(content)
         script_path.chmod(0o755)
         return script_path
+
     return _create_script
+
 
 def test_parses_all_variable_types(create_script):
     """
@@ -74,8 +78,7 @@ def test_filters_for_target_vars(create_script):
     """Tests that the target_vars argument correctly filters the result."""
     script_path = create_script("all_types.sh", ALL_TYPES_SCRIPT_CONTENT)
     variables = source_and_get_vars(
-        script_path,
-        target_vars=["SIMPLE_STRING", "CONFIG"]
+        script_path, target_vars=["SIMPLE_STRING", "CONFIG"]
     )
 
     expected = {
@@ -97,30 +100,37 @@ def test_raises_script_not_found_error():
 
 def test_raises_bash_script_error_on_fatal_syntax(create_script):
     """Tests that a fatal script error (like a syntax error) raises BashScriptError."""
-    fatal_script_content = "if; then" # Invalid bash syntax
+    fatal_script_content = "if; then"  # Invalid bash syntax
     script_path = create_script("fatal.sh", fatal_script_content)
 
     with pytest.raises(BashScriptError) as excinfo:
         source_and_get_vars(script_path)
-    
+
     # Check that the exception object contains useful info
     assert excinfo.value.exit_code != 0
     assert "syntax error" in excinfo.value.stderr.lower()
 
 
-def test_raises_bash_executable_not_found(monkeypatch):
+# Change this test function:
+def test_raises_bash_executable_not_found(
+    monkeypatch, create_script
+):  # Add create_script
     """
     Tests that we raise BashExecutableNotFoundError if 'bash' cannot be found.
     We use monkeypatch to simulate 'bash' not being on the system.
     """
+    # Create a dummy script file so the initial check passes.
+    dummy_script = create_script("dummy.sh", "VAR=1")
+
     # 1. Simulate `shutil.which` failing to find 'bash' in the PATH
     monkeypatch.setattr(shutil, "which", lambda cmd: None)
-    
+
     # 2. Simulate the fallback paths not existing either
     monkeypatch.setattr(Path, "is_file", lambda self: False)
 
     with pytest.raises(BashExecutableNotFoundError):
-        source_and_get_vars("/any/path/will/do")
+        # Use the path to the real, temporary script.
+        source_and_get_vars(dummy_script)
 
 
 def test_empty_script_returns_no_user_vars(create_script):
