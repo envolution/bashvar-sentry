@@ -1,123 +1,105 @@
-[![PyPI version](https://badge.fury.io/py/bashvar-sentry.svg)](https://badge.fury.io/py/bashvar-sentry)
+# BashVar Sentry
 
-Safely source Bash scripts and capture variables in Python.
+**BashVar Sentry** is a Python utility module that securely extracts Bash variable declarations from scripts by **sourcing** them in a sandboxed environment. It supports sandboxing via `chroot`, `bwrap`, or `fakechroot` to reduce risk from untrusted content.
 
-`bashvar-sentry` provides a secure, sandboxed way to load variables from a Bash script (`.sh` file) into your Python application without the risk of executing arbitrary commands.
+---
 
-## The Problem
+## 📦 Installation
 
-Sourcing a shell script to get configuration variables is a common need, but using `subprocess` with `shell=True` is extremely dangerous. A malicious or compromised script could execute any command on your system, like `rm -rf /` or `curl ... | bash`.
+Install from PyPI:
 
-## The Solution
+    pip install bashvar-sentry
 
-`bashvar-sentry` executes the target script in a pseudo sandbox where its `PATH` is empty. This "declaws" the script, preventing it from running any external programs (`ls`, `curl`, `rm`, etc.). It can still define variables using Bash built-ins, which we then safely capture and parse.
+---
 
-### Key Features
+## 🧰 Usage
 
-* **Secure by Design:** The pseudo sandbox execution prevents shell command injection and other side effects.
-* **Full Type Support:** Correctly parses strings, indexed arrays (as Python lists), and associative arrays (as Python dicts).
-* **Simple API:** A single function call, `source_and_get_vars()`, is all you need.
-* **No Runtime Dependencies:** The core functionality is self-contained.
+### As a Python module
 
-## Installation
+```python
+from bashvar_sentry import source_and_get_vars
 
-```bash
-pip install bashvar-sentry
+variables = source_and_get_vars(
+    "example.sh",
+    sandbox_method="auto",           # "auto", "chroot", "bwrap", "fakechroot", "empty"
+    jail_dir="/",                    # Optional: target root dir for sandbox
+    extra_env={"MYVAR": "from_python"},
+    additional_args=["one", "two"]
+)
+
+print(variables)
 ```
 
-## Quickstart
+---
 
-Let's say you have a configuration file named `config.sh`:
+## 📄 Bash Script Requirements
 
-**`config.sh`**
+Your script must be syntactically valid (`bash -n` is run first).
+
+---
+
+### Example Script: `example.sh`
 
 ```bash
 #!/bin/bash
 
-# This dangerous command will fail safely inside the sandbox
-# because 'rm' cannot be found.
-rm -rf /tmp/some_important_file
+ARG1=$1
+ARG2=$2
+ENV_CAPTURED="$MYVAR"
 
-# --- Variables to be sourced ---
-
-# A simple string value
-APP_NAME="User Management Service"
-
-# An indexed array of servers
-SERVER_LIST=("prod-web-01" "prod-web-02" "prod-db-01")
-
-# An associative array (map) of user roles (requires Bash 4+)
-declare -A USER_ROLES
-USER_ROLES["admin"]="usr-admin-123"
-USER_ROLES["viewer"]="usr-viewer-456"
+declare -a FRUITS=("apple" "banana split")
+declare -A CONFIG=([host]="localhost" [port]="8080")
 ```
 
-Now, you can safely load these variables in Python.
-
-**`main.py`**
+### Output
 
 ```python
-import pprint
-from bashvar_sentry import source_and_get_vars, BashScriptError
-
-# --- Example 1: Get all variables from the script ---
-print("--- Loading all variables ---")
-try:
-    all_config = source_and_get_vars("./config.sh")
-    pprint.pprint(all_config)
-except BashScriptError as e:
-    # This might happen if the script has a fatal syntax error
-    print(f"Error sourcing script: {e.stderr}")
-except FileNotFoundError:
-    print("Error: config.sh not found.")
-
-print("\n" + "="*40 + "\n")
-
-# --- Example 2: Get a specific subset of variables ---
-print("--- Loading only specific variables ---")
-target_keys = ["APP_NAME", "USER_ROLES"]
-app_config = source_and_get_vars("./config.sh", target_vars=target_keys)
-pprint.pprint(app_config)
-
+{
+  "ARG1": "one",
+  "ARG2": "two",
+  "ENV_CAPTURED": "from_python",
+  "FRUITS": ["apple", "banana split"],
+  "CONFIG": {"host": "localhost", "port": "8080"}
+}
 ```
 
-**Expected Output:**
+---
 
-```
---- Loading all variables ---
-{'APP_NAME': 'User Management Service',
- 'SERVER_LIST': ['prod-web-01', 'prod-web-02', 'prod-db-01'],
- 'USER_ROLES': {'admin': 'usr-admin-123', 'viewer': 'usr-viewer-456'}}
+## 🔐 Sandbox Methods
 
-========================================
+| Method        | Isolation   | Root Required | Notes                      |
+|---------------|-------------|---------------|----------------------------|
+| `chroot`      | Full        | Yes       | Needs `/usr/sbin/chroot`  |
+| `bwrap`       | Strong      | No            | Needs `bwrap` binary       |
+| `fakechroot`  | Simulated   | No            | Must have `fakechroot`     |
+| `empty`       | Minimal     | No            | Sets `PATH=""`             |
+| `auto`        | Best fit    | No            | Picks the first available  |
 
---- Loading only specific variables ---
-{'APP_NAME': 'User Management Service',
- 'USER_ROLES': {'admin': 'usr-admin-123', 'viewer': 'usr-viewer-456'}}
-```
+---
 
-## API Reference
+## 🚫 Caveats
 
-### `source_and_get_vars(script_path, target_vars=None)`
+- Scripts are **sourced**, not executed. This means:
+  - Side effects can persist in the current shell context.
+  - Background jobs, subshells, etc., may behave differently.
+- Environment is isolated if you use sandboxing. If not, it's up to you.
 
-Safely sources a bash script and returns its variables.
+---
 
-* **`script_path`** (`str | Path`): The absolute or relative path to the bash script to source.
-* **`target_vars`** (`Optional[List[str]]`): An optional list of specific variable names to retrieve. If `None` (the default), all variables declared by the script are returned.
+## ✅ Testing
 
-**Returns:**
+Run tests with:
 
-* A `dict` mapping variable names to their values.
-  * Bash indexed arrays are converted to Python `list`.
-  * Bash associative arrays are converted to Python `dict`.
+    python -m pytest
 
-**Raises:**
+To test sandbox fallbacks, install:
 
-* `ScriptNotFoundError`: If the `script_path` does not point to a valid file.
-* `BashExecutableNotFoundError`: If the `bash` executable cannot be found on the system.
-* `BashScriptError`: If the script itself exits with a fatal syntax error. Non-fatal errors (like a command not found) are ignored.
-* `ParsingError`: If the module fails to parse the script's variable output, indicating a very unusual variable declaration.
+- `/usr/sbin/chroot` and run as root (for chroot) - This auto skips if not root
+- `bwrap`
+- `fakechroot`
 
-## License
+---
 
-This project is licensed under the Apache-2.0 License.
+## 📄 License
+
+Apache-2.0

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "bashvar_sentry"
-version = "0.0.3"
+version = "0.0.4"
 authors = [{ name = "envolution", email = "involution@gmail.com" }]
 description = "A robust Python module to safely source a bash script in a sandboxed environment and collect its variables."
 readme = "README.md"
