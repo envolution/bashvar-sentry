@@ -2,6 +2,7 @@ import os
 import re
 import shlex
 import shutil
+import fnmatch
 import subprocess
 from pathlib import Path
 from typing import Dict, List, Optional, Union, Any
@@ -176,5 +177,9 @@ def source_and_get_vars(
 
     all_vars = _parse_declare_output(result.stdout)
     if target_vars:
-        return {k: v for k, v in all_vars.items() if k in target_vars}
+        return {
+            k: v
+            for k, v in all_vars.items()
+            if any(fnmatch.fnmatch(k, pattern) for pattern in target_vars)
+        }
     return all_vars
