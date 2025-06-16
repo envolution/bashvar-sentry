@@ -184,4 +184,5 @@ def source_and_get_vars(
             if any(fnmatch.fnmatch(k, pattern) for pattern in target_vars)
         }
         filtered["method"] = sandbox_method
+        return filtered
     return all_vars
