@@ -176,13 +176,13 @@ def source_and_get_vars(
             ) from e
 
     all_vars = _parse_declare_output(result.stdout)
-    all_vars["method"] = sandbox_method
+    all_vars["sandbox_method"] = sandbox_method
     if target_vars:
         filtered = {
             k: v
             for k, v in all_vars.items()
             if any(fnmatch.fnmatch(k, pattern) for pattern in target_vars)
         }
-        filtered["method"] = sandbox_method
+        filtered["sandbox_method"] = sandbox_method
         return filtered
     return all_vars
